@@ -1,0 +1,31 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  orderer.anpan.org:
+ 
+networks:
+  byfn:
+
+services:
+
+  orderer.anpan.org:
+    extends:
+      file: peer-base.yaml
+      service: orderer-base
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=7050
+    container_name: orderer.anpan.org
+    networks:
+      - byfn
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/anpan.org/orderers/orderer.anpan.org/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/anpan.org/orderers/orderer.anpan.org/tls/:/var/hyperledger/orderer/tls
+      - orderer.anpan.org:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050

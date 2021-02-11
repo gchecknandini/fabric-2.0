@@ -1,0 +1,65 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+services:
+
+  orderer.anpan.org:
+    container_name: orderer.anpan.org
+    extends:
+      file: peer-base.yaml
+      service: orderer-base
+    volumes:
+        - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/anpan.org/orderers/orderer.anpan.org/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/anpan.org/orderers/orderer.anpan.org/tls/:/var/hyperledger/orderer/tls
+        - orderer.anpan.org:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+
+  peer0.public.anpan.org:
+    container_name: peer0.public.anpan.org
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.public.anpan.org
+      - CORE_PEER_ADDRESS=peer0.public.anpan.org:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.public.anpan.org:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.public.anpan.org:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.public.anpan.org:7051
+      - CORE_PEER_LOCALMSPID=PublicMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/public.anpan.org/peers/peer0.public.anpan.org/msp:/etc/hyperledger/fabric/msp
+        - ./crypto-config/peerOrganizations/public.anpan.org/peers/peer0.public.anpan.org/tls:/etc/hyperledger/fabric/tls
+        - peer0.public.anpan.org:/var/hyperledger/production
+    ports:
+      - 7051:7051
+
+  peer0.private.anpan.org:
+    container_name: peer0.private.anpan.org
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.private.anpan.org
+      - CORE_PEER_ADDRESS=peer0.private.anpan.org:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.private.anpan.org:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.private.anpan.org:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.private.anpan.org:9051
+      - CORE_PEER_LOCALMSPID=PrivateMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/private.anpan.org/peers/peer0.private.anpan.org/msp:/etc/hyperledger/fabric/msp
+        - ./crypto-config/peerOrganizations/private.anpan.org/peers/peer0.private.anpan.org/tls:/etc/hyperledger/fabric/tls
+        - peer0.private.anpan.org:/var/hyperledger/production
+    ports:
+      - 9051:9051

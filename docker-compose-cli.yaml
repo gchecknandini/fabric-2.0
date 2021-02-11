@@ -1,0 +1,73 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  orderer.anpan.org:
+  peer0.public.anpan.org:
+  peer0.private.anpan.org:
+
+networks:
+  byfn:
+
+services:
+
+  orderer.anpan.org:
+    extends:
+      file:   docker-compose-base.yaml
+      service: orderer.anpan.org
+    container_name: orderer.anpan.org
+    networks:
+      - byfn
+
+  peer0.public.anpan.org:
+    container_name: peer0.public.anpan.org
+    extends:
+      file:  docker-compose-base.yaml
+      service: peer0.public.anpan.org
+    networks:
+      - byfn
+
+  peer0.private.anpan.org:
+    container_name: peer0.private.anpan.org
+    extends:
+      file:  docker-compose-base.yaml
+      service: peer0.private.anpan.org
+    networks:
+      - byfn
+
+  cli:
+    container_name: Cli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.public.anpan.org:7051
+      - CORE_PEER_LOCALMSPID=PublicMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/public.anpan.org/peers/peer0.public.anpan.org/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/public.anpan.org/peers/peer0.public.anpan.org/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/public.anpan.org/peers/peer0.public.anpan.org/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/public.anpan.org/users/Admin@public.anpan.org/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./chaincode/:/opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.anpan.org
+      - peer0.public.anpan.org
+      - peer0.private.anpan.org
+    networks:
+      - byfn
